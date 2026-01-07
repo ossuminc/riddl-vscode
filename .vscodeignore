@@ -1,0 +1,32 @@
+# Build artifacts
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+.gitattributes
+.editorconfig
+
+# TypeScript config
+tsconfig.json
+tslint.json
+.eslintrc.json
+
+# Build scripts
+webpack.config.js
+
+# Testing
+**/test/**
+**/.vscode-test/**
+
+# Dependencies
+node_modules/**
+
+# Documentation
+**/*.md
+!README.md
+
+# Source maps
+**/*.map
+
+# Logs
+**/*.log

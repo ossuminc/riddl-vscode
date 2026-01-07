@@ -1,0 +1,84 @@
+{
+  "name": "riddl-vscode",
+  "displayName": "RIDDL Language Support",
+  "description": "Language support for RIDDL (Reactive Interface to Domain Definition Language)",
+  "version": "0.1.0",
+  "publisher": "ossuminc",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ossuminc/riddl-vscode"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "riddl",
+    "ddd",
+    "domain-driven-design",
+    "reactive",
+    "dsl"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:riddl"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "riddl",
+        "aliases": [
+          "RIDDL",
+          "riddl"
+        ],
+        "extensions": [
+          ".riddl"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/riddl-icon.png",
+          "dark": "./icons/riddl-icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "riddl",
+        "scopeName": "source.riddl",
+        "path": "./syntaxes/riddl.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "riddl.showInfo",
+        "title": "RIDDL: Show Info"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.75.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
+    "@vscode/vsce": "^2.18.0",
+    "eslint": "^8.34.0",
+    "glob": "^13.0.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5"
+  }
+}

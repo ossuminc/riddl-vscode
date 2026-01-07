@@ -1,0 +1,34 @@
+# Compiled output
+out/
+dist/
+*.js
+*.js.map
+*.d.ts
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode-test/
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+
+# Build artifacts
+*.vsix
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,118 @@
+// Test RIDDL file for syntax highlighting
+// This file demonstrates various RIDDL language features
+
+author Reid is {
+  name: "Reid Spencer"
+  email: "reid@ossum.biz"
+}
+
+// A domain definition
+domain ECommerce is {
+
+  // Type definitions
+  type OrderId is Id(Order)
+  type ProductId is Id(Product)
+  type CustomerId is Id(Customer)
+
+  type Money is Decimal(10,2)
+  type EmailAddress is String(5,1020)
+
+  // Command definitions
+  command PlaceOrder(
+    orderId: OrderId,
+    customerId: CustomerId,
+    items: ProductId+
+  )
+
+  // Event definitions
+  event OrderPlaced is {
+    orderId: OrderId,
+    timestamp: TimeStamp
+  }
+
+  // Record type
+  record OrderItem is {
+    productId: ProductId,
+    quantity: Integer,
+    price: Money
+  }
+
+  // Context definition
+  context Ordering is {
+
+    // Entity definition
+    entity Order is {
+
+      // State definition
+      state OrderState is {
+        orderId: OrderId,
+        customerId: CustomerId,
+        status: String,
+        items: OrderItem*,
+        total: Money
+      }
+
+      // Handler definition
+      handler PlaceOrderHandler is {
+        on command PlaceOrder {
+          // Handler logic would go here
+          send event OrderPlaced to OrderHistory
+        }
+      } with {
+        briefly "Handles order placement"
+      }
+
+      // Function definition
+      function calculateTotal is {
+        requires { items: OrderItem* }
+        returns { total: Money }
+      }
+
+    } with {
+      briefly "Represents a customer order"
+    }
+
+  } with {
+    briefly "Handles order processing"
+  }
+
+  // Epic definition
+  epic CustomerOrdering is {
+    user Customer wants "to place an order" so that "they can purchase products"
+
+    case primary is {
+      user Customer wants "to select products" so that "they can add to cart"
+    }
+
+    case secondary is {
+      user Customer wants "to review order" so that "they can confirm purchase"
+    }
+  } with {
+    briefly by "Customer ordering workflow"
+  }
+
+  // Repository definition
+  repository OrderRepository is {
+    ??? // Implementation TBD
+  }
+
+} with {
+  by author Reid
+  briefly "E-commerce domain model"
+  described as {
+    |This domain models an e-commerce system
+    |with orders, products, and customers.
+    |
+    |## Features
+    |* Order placement
+    |* Product catalog
+    |* Customer management
+  }
+}
+
+/* Multi-line comment
+   demonstrating block comments
+   in RIDDL syntax */
+
+// Include example
+include "other-domain.riddl"
