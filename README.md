@@ -4,20 +4,49 @@ Language support for RIDDL (Reactive Interface to Domain Definition Language), a
 
 ## Features
 
-### Milestone 1 (Current)
-- **Syntax Highlighting**: Comprehensive TextMate grammar for RIDDL syntax
-  - Keywords (domain, context, entity, type, etc.)
-  - Predefined types (String, Integer, Boolean, etc.)
+### ✅ Milestone 1: Basic Syntax Highlighting
+- **TextMate Grammar**: Comprehensive syntax highlighting
+  - Keywords (domain, context, entity, type, command, event, etc.)
+  - Predefined types (String, Integer, Boolean, Id, etc.)
+  - Readability words (is, of, by, for, to, etc.)
   - Comments (line and block)
   - Strings and code blocks
-  - Markdown lines
   - Operators and punctuation
-- **Editor Configuration**: Auto-closing brackets, comment toggling, and code folding
+- **Editor Configuration**: Auto-closing brackets, comment toggling, code folding
+- **Status**: Complete
 
-### Upcoming Milestones
-- **Milestone 2**: Scala.js integration for semantic tokenization
-- **Milestone 3**: Real-time diagnostics (errors and warnings)
-- **Milestone 4+**: Hover information, go to definition, find references, code completion
+### ✅ Milestone 2: RIDDL Library Integration
+- **JavaScript-Friendly API**: Integration with `@ossuminc/riddl-lib`
+  - Parse RIDDL source to AST
+  - Tokenize for syntax highlighting
+  - Returns JavaScript arrays (not Scala collections)
+  - Proper error handling with structured error objects
+- **TypeScript Declarations**: Full type definitions
+- **Status**: Complete
+
+### ✅ Milestone 3: Semantic Highlighting
+- **Semantic Token Provider**: Parser-based syntax highlighting
+  - Accurate token identification using RIDDL parser
+  - Context-aware coloring
+  - Real-time updates as you type
+  - Works with all VSCode themes
+- **Two-Layer Highlighting**: TextMate + Semantic for complete coverage
+- **Status**: Complete
+
+### ✅ Milestone 4: Hover Documentation
+- **Hover Provider**: Rich documentation on hover
+  - **Keywords**: Explanation of RIDDL keywords (domain, context, entity, etc.)
+  - **Predefined Types**: Documentation for built-in types (Id, String, Number, etc.)
+  - **Readability Words**: Info about structural keywords (is, of, by, etc.)
+  - **Location Info**: Shows line and column numbers
+- **Markdown Formatted**: Rich content with code blocks and sections
+- **Status**: Complete
+
+### 🚧 Upcoming Milestones
+- **Milestone 5**: Diagnostics - Show parse errors inline with squiggly underlines
+- **Milestone 6**: Code Intelligence - Completion, go to definition, find references
+- **Milestone 7**: Commands - Parse, validate, translate operations
+- **Milestone 8**: Debugging - Debug support for RIDDL
 
 ## Installation
 
@@ -153,9 +182,13 @@ Contributions are welcome! This extension is being built incrementally with test
 ### Development Roadmap
 
 1. ✅ Milestone 1: Basic syntax highlighting via TextMate grammar
-2. ⏳ Milestone 2: Scala.js integration for semantic tokens
-3. ⏳ Milestone 3: Real-time error diagnostics
-4. ⏳ Milestone 4: Semantic features (hover, definitions, completion)
+2. ✅ Milestone 2: RIDDL library integration (Scala.js)
+3. ✅ Milestone 3: Semantic token provider
+4. ✅ Milestone 4: Hover documentation
+5. ⏳ Milestone 5: Diagnostics (parse errors)
+6. ⏳ Milestone 6: Code intelligence (completion, definitions, references)
+7. ⏳ Milestone 7: Commands (parse, validate, translate)
+8. ⏳ Milestone 8: Debugging support
 
 ## License
 

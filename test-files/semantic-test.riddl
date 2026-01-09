@@ -1,0 +1,86 @@
+// RIDDL Semantic Highlighting Test File
+// This file tests semantic token highlighting for various RIDDL constructs
+
+domain ECommerce is {
+  // Type definitions
+  type OrderId is Id(Order)
+  type CustomerId is Id(Customer)
+  type ProductId is Id(Product)
+  type Money is Number
+  type EmailAddress is String
+
+  // Context: Shopping Cart
+  context ShoppingCart is {
+
+    // Entity with state
+    entity Cart is {
+      option aggregate
+
+      state CartState is {
+        items: Items,
+        total: Money
+      }
+
+      // Commands
+      command AddItem is {
+        productId: ProductId,
+        quantity: Number
+      }
+
+      command RemoveItem is {
+        productId: ProductId
+      }
+
+      command Checkout is {
+        customerId: CustomerId
+      }
+
+      // Events
+      event ItemAdded is {
+        productId: ProductId,
+        quantity: Number
+      }
+
+      event ItemRemoved is {
+        productId: ProductId
+      }
+
+      event CheckedOut is {
+        orderId: OrderId,
+        total: Money
+      }
+
+      // Handler for commands
+      handler AddItemHandler is {
+        on command AddItem {
+          send event ItemAdded to Cart
+        }
+      }
+    }
+
+    // Another entity
+    entity Order is {
+      option aggregate
+
+      state OrderState is {
+        customerId: CustomerId,
+        items: Items,
+        status: OrderStatus,
+        total: Money
+      }
+    }
+  }
+
+  // Context: Customer Management
+  context CustomerManagement is {
+    entity Customer is {
+      option aggregate
+
+      state CustomerState is {
+        email: EmailAddress,
+        name: String,
+        orders: OrderId*
+      }
+    }
+  }
+}

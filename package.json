@@ -22,7 +22,7 @@
     "reactive",
     "dsl"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/src/extension.js",
   "activationEvents": [
     "onLanguage:riddl"
   ],
@@ -41,6 +41,21 @@
         "icon": {
           "light": "./icons/riddl-icon.png",
           "dark": "./icons/riddl-icon.png"
+        }
+      }
+    ],
+    "semanticTokenTypes": [
+      {
+        "id": "macro",
+        "description": "Readability words (is, of, by, etc.)"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "macro": [
+            "keyword.other.riddl"
+          ]
         }
       }
     ],
@@ -80,5 +95,8 @@
     "glob": "^13.0.0",
     "mocha": "^10.2.0",
     "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-1.0.1-11-47d36023-20260108-1710.tgz"
   }
 }
