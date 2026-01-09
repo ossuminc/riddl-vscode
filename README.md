@@ -42,10 +42,24 @@ Language support for RIDDL (Reactive Interface to Domain Definition Language), a
 - **Markdown Formatted**: Rich content with code blocks and sections
 - **Status**: Complete
 
+### ✅ Milestone 5: Diagnostics (Syntax + Semantic)
+- **Comprehensive Error Checking**: Both syntax and semantic errors shown as squiggly underlines
+  - **Parse/Syntax Errors**: Detects invalid syntax, missing braces, malformed expressions
+  - **Validation Errors**: Detects undefined references, type mismatches, semantic violations
+  - **Warnings**: Style issues, missing documentation, usage warnings
+  - **Info Messages**: Informational hints and suggestions
+- **Visual Distinction**: Source labels distinguish error types
+  - `RIDDL (syntax)` - Parse errors (red squiggles)
+  - `RIDDL (validation)` - Semantic errors (red squiggles)
+  - `RIDDL (validation)` - Warnings (yellow squiggles)
+  - `RIDDL (info)` - Info messages (blue squiggles)
+- **Debounced Processing**: 500ms delay to avoid excessive processing while typing
+- **Problems Panel Integration**: All diagnostics listed with full details
+- **Status**: Complete (both syntax and semantic validation)
+
 ### 🚧 Upcoming Milestones
-- **Milestone 5**: Diagnostics - Show parse errors inline with squiggly underlines
 - **Milestone 6**: Code Intelligence - Completion, go to definition, find references
-- **Milestone 7**: Commands - Parse, validate, translate operations
+- **Milestone 7**: Commands - Parse, validate, translate, info operations
 - **Milestone 8**: Debugging - Debug support for RIDDL
 
 ## Installation
@@ -185,9 +199,9 @@ Contributions are welcome! This extension is being built incrementally with test
 2. ✅ Milestone 2: RIDDL library integration (Scala.js)
 3. ✅ Milestone 3: Semantic token provider
 4. ✅ Milestone 4: Hover documentation
-5. ⏳ Milestone 5: Diagnostics (parse errors)
+5. ✅ Milestone 5: Diagnostics (syntax + semantic validation)
 6. ⏳ Milestone 6: Code intelligence (completion, definitions, references)
-7. ⏳ Milestone 7: Commands (parse, validate, translate)
+7. ⏳ Milestone 7: Commands (info, parse, validate, translate)
 8. ⏳ Milestone 8: Debugging support
 
 ## License

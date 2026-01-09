@@ -97,6 +97,6 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-1.0.1-11-47d36023-20260108-1710.tgz"
+    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-1.0.1-12-80b4b3e5-20260108-2005.tgz"
   }
 }

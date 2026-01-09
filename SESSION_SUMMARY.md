@@ -181,20 +181,101 @@ Added comprehensive hover documentation for previously missing keywords and read
 - Predefined types: 19+
 - **Total vocabulary coverage: 114+ documented items**
 
-### Next Steps
+## Milestone 5: Diagnostics - COMPLETE ✅ (Including Validation)
 
-**Milestone 5: Diagnostics** (Future)
-- Show parse errors inline with squiggly underlines
-- Display warnings and hints
-- Quick fixes for common errors
+### What We Built
+
+Successfully implemented comprehensive real-time diagnostic provider that shows **both syntax and semantic errors** inline with squiggly underlines.
+
+### Initial Implementation (Parse Errors Only)
+
+1. **Diagnostics Provider** (`src/diagnosticsProvider.ts`)
+   - Real-time error checking with 500ms debounce
+   - Converts RIDDL parse errors to VSCode diagnostics
+   - Shows red squiggly underlines at error locations
+   - Displays error messages on hover
+   - Integrates with VSCode Problems panel
+
+2. **Event Integration**
+   - Automatically parses on document open
+   - Re-parses on document change (debounced)
+   - Clears diagnostics on document close
+   - Only processes RIDDL files
+
+3. **Testing**
+   - 7 diagnostic tests added
+   - All tests passing
+
+### Validation Enhancement (2026-01-09)
+
+**Enhanced RIDDL Library:**
+- Added `validateString()` method to `RiddlAPI.scala`
+- Runs full validation pipeline: Parse → Symbols → Resolution → Validation
+- Returns separated parse errors and validation messages
+- Groups messages by severity (errors, warnings, info)
+
+**Enhanced Diagnostics Provider:**
+- Now calls `validateString()` for comprehensive checking
+- Processes four diagnostic categories:
+  1. **Parse/Syntax Errors** - `RIDDL (syntax)` source, red squiggles
+  2. **Validation Errors** - `RIDDL (validation)` source, red squiggles
+  3. **Validation Warnings** - `RIDDL (validation)` source, yellow squiggles
+  4. **Info Messages** - `RIDDL (info)` source, blue squiggles
+
+**What's Now Detected:**
+
+*Syntax Errors (from parsing):*
+- Missing closing braces, invalid syntax, unexpected tokens, malformed expressions
+
+*Semantic Errors (from validation):*
+- Undefined type references
+- Invalid cross-references
+- Type mismatches
+- Semantic constraint violations
+- Missing required definitions
+- Naming convention violations
+- Domain-specific rule violations
+
+*Validation Warnings:*
+- Style issues, missing documentation, usage warnings, incomplete definitions
+
+### Visual Distinction
+
+Users can now see the difference between syntax and semantic issues:
+- **Problems Panel:** Source label shows `RIDDL (syntax)` vs `RIDDL (validation)` vs `RIDDL (info)`
+- **Editor:** Different severity squiggles (red for errors, yellow for warnings, blue for info)
+
+### Testing
+
+- All 40 tests passing
+- Tests updated to distinguish syntax from semantic errors
+- Validates proper source labeling and severity mapping
+
+### Files Modified
+
+**RIDDL Library:**
+- `riddlLib/js/src/main/scala/com/ossuminc/riddl/RiddlAPI.scala` - Added `validateString()`
+
+**VSCode Extension:**
+- `src/diagnosticsProvider.ts` - Enhanced to use validation
+- `src/riddl-lib.d.ts` - Added TypeScript types for validation
+- `test/suite/diagnostics.test.ts` - Updated tests for validation
+- `package.json` - Updated RIDDL library version to 1.0.1-12
+
+**RIDDL Library Version:**
+- **Previous:** 1.0.1-11-47d36023-20260108-1710
+- **Current:** 1.0.1-12-80b4b3e5-20260108-2005 (with validation API)
+
+### Next Steps
 
 **Milestone 6: Code Intelligence** (Future)
 - Completion provider for keywords and identifiers
 - Definition provider for navigation
 - Reference provider for find all references
 
-**Milestone 7: Commands** (Pending)
+**Milestone 7: Commands** (Future)
 - Implement RIDDL commands:
+  - `riddl.info` - Show RIDDL file information
   - `riddl.parse` - Parse current file
   - `riddl.validate` - Validate with full checking
   - `riddl.translate` - Translate to output format
@@ -214,7 +295,7 @@ Added comprehensive hover documentation for previously missing keywords and read
 ✅ **Milestone 2:** RIDDL library integration - Complete
 ✅ **Milestone 3:** Semantic token highlighting - Complete
 ✅ **Milestone 4:** Hover documentation - Complete
-⏳ **Milestone 5:** Diagnostics - Not started
+✅ **Milestone 5:** Diagnostics (syntax + semantic validation) - Complete
 ⏳ **Milestone 6:** Code Intelligence - Not started
 ⏳ **Milestone 7:** Commands - Not started
 

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { RiddlSemanticTokensProvider, legend } from './semanticTokensProvider';
 import { RiddlHoverProvider } from './hoverProvider';
+import { RiddlDiagnosticsProvider } from './diagnosticsProvider';
 
 /**
  * RIDDL VSCode Extension
@@ -9,6 +10,7 @@ import { RiddlHoverProvider } from './hoverProvider';
  * Milestone 2: RIDDL library integration
  * Milestone 3: Semantic highlighting via semantic token provider
  * Milestone 4: Hover provider for documentation
+ * Milestone 5: Diagnostics provider for parse errors
  *
  * This extension provides language support for RIDDL (Reactive Interface to Domain Definition Language),
  * a specification language for designing distributed, reactive, cloud-native systems using DDD principles.
@@ -44,6 +46,49 @@ export function activate(context: vscode.ExtensionContext) {
             )
         );
         console.log('RIDDL hover provider registered');
+
+        // Register diagnostics provider for parse errors
+        console.log('Creating diagnostics provider...');
+        const diagnosticsProvider = new RiddlDiagnosticsProvider();
+        context.subscriptions.push(diagnosticsProvider);
+
+        // Update diagnostics when document opens
+        context.subscriptions.push(
+            vscode.workspace.onDidOpenTextDocument((document) => {
+                if (document.languageId === 'riddl') {
+                    console.log('Opened RIDDL file:', document.fileName);
+                    diagnosticsProvider.updateDiagnostics(document);
+                }
+            })
+        );
+
+        // Update diagnostics when document changes
+        context.subscriptions.push(
+            vscode.workspace.onDidChangeTextDocument((event) => {
+                if (event.document.languageId === 'riddl') {
+                    diagnosticsProvider.updateDiagnostics(event.document);
+                }
+            })
+        );
+
+        // Clear diagnostics when document closes
+        context.subscriptions.push(
+            vscode.workspace.onDidCloseTextDocument((document) => {
+                if (document.languageId === 'riddl') {
+                    diagnosticsProvider.clearDiagnostics(document);
+                }
+            })
+        );
+
+        // Parse all currently open RIDDL documents
+        vscode.workspace.textDocuments.forEach((document) => {
+            if (document.languageId === 'riddl') {
+                diagnosticsProvider.updateDiagnostics(document);
+            }
+        });
+
+        console.log('RIDDL diagnostics provider registered');
+
     } catch (error) {
         console.error('Error during extension activation:', error);
         if (error instanceof Error) {
@@ -59,13 +104,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(disposable);
-
-    // Log when a RIDDL file is opened
-    vscode.workspace.onDidOpenTextDocument((document) => {
-        if (document.languageId === 'riddl') {
-            console.log('Opened RIDDL file:', document.fileName);
-        }
-    });
 }
 
 export function deactivate() {
