@@ -57,9 +57,35 @@ Language support for RIDDL (Reactive Interface to Domain Definition Language), a
 - **Problems Panel Integration**: All diagnostics listed with full details
 - **Status**: Complete (both syntax and semantic validation)
 
+### ✅ Milestone 6: Code Intelligence
+- **Completion Provider**: IntelliSense for RIDDL keywords, types, and identifiers
+  - **Keywords**: All 50+ RIDDL keywords with snippets (domain, context, entity, command, etc.)
+  - **Predefined Types**: Built-in types (String, Integer, Id, Boolean, etc.)
+  - **Readability Words**: Structural keywords (is, of, by, with, etc.)
+  - **Snippets**: Code templates for major constructs
+  - **Documentation**: Rich descriptions for all completion items
+- **Definition Provider**: "Go to Definition" (F12) navigation
+  - Jump to where types, entities, commands, events are defined
+  - Works across the entire document
+  - Handles both user-defined and built-in types
+- **Reference Provider**: "Find All References" (Shift+F12) functionality
+  - Find all usages of a symbol
+  - Optionally include or exclude the declaration
+  - Works for types, entities, commands, events, and all identifiers
+- **Status**: Complete
+
+### ✅ Milestone 7: Commands
+- **Four VSCode Commands**: Accessible via Command Palette (Cmd+Shift+P / Ctrl+Shift+P)
+  - **RIDDL: Version Information**: Display RIDDL build info, version, and extension features
+  - **RIDDL: Parse Current File**: Parse active file and show AST structure
+  - **RIDDL: Validate Current File**: Run full validation (syntax + semantic) with errors/warnings
+  - **RIDDL: Translate to Output Format**: Placeholder for future translation features
+- **Output Panel Integration**: All results displayed in dedicated "RIDDL" output channel
+- **Clean Formatting**: ANSI codes stripped, numbered messages, clear separators
+- **Error Handling**: Graceful handling of missing editor, wrong file type, library errors
+- **Status**: Complete
+
 ### 🚧 Upcoming Milestones
-- **Milestone 6**: Code Intelligence - Completion, go to definition, find references
-- **Milestone 7**: Commands - Parse, validate, translate, info operations
 - **Milestone 8**: Debugging - Debug support for RIDDL
 
 ## Installation
@@ -88,6 +114,50 @@ Language support for RIDDL (Reactive Interface to Domain Definition Language), a
    ```
 
 5. Press `F5` to launch the Extension Development Host
+
+## Usage
+
+### Commands
+
+Access RIDDL commands via the Command Palette (`Cmd+Shift+P` on Mac, `Ctrl+Shift+P` on Windows/Linux):
+
+#### RIDDL: Version Information
+Display RIDDL build information, version, and extension features.
+
+**Usage:**
+1. Press `Cmd+Shift+P`
+2. Type "RIDDL: Version Information"
+3. View output in the RIDDL Output panel
+
+#### RIDDL: Parse Current File
+Parse the currently active RIDDL file and display the Abstract Syntax Tree (AST) structure.
+
+**Usage:**
+1. Open a `.riddl` file
+2. Press `Cmd+Shift+P`
+3. Type "RIDDL: Parse Current File"
+4. View parse results and AST in the RIDDL Output panel
+
+#### RIDDL: Validate Current File
+Run full validation (syntax + semantic) on the currently active RIDDL file. Shows parse errors, validation errors, warnings, and informational messages.
+
+**Usage:**
+1. Open a `.riddl` file
+2. Press `Cmd+Shift+P`
+3. Type "RIDDL: Validate Current File"
+4. View validation results in the RIDDL Output panel
+
+#### RIDDL: Translate to Output Format
+Placeholder for future translation features. Currently shows information about available `riddlc` translation commands.
+
+### Editor Features
+
+- **Syntax Highlighting**: Automatic for `.riddl` files
+- **Hover Documentation**: Hover over keywords, types, and identifiers to see documentation
+- **Code Completion**: Type to get IntelliSense suggestions (Ctrl+Space)
+- **Go to Definition**: F12 or Cmd+Click on a type/identifier
+- **Find All References**: Shift+F12 on any symbol
+- **Real-time Diagnostics**: Errors and warnings appear as you type
 
 ## Development
 
@@ -200,8 +270,8 @@ Contributions are welcome! This extension is being built incrementally with test
 3. ✅ Milestone 3: Semantic token provider
 4. ✅ Milestone 4: Hover documentation
 5. ✅ Milestone 5: Diagnostics (syntax + semantic validation)
-6. ⏳ Milestone 6: Code intelligence (completion, definitions, references)
-7. ⏳ Milestone 7: Commands (info, parse, validate, translate)
+6. ✅ Milestone 6: Code intelligence (completion, definitions, references)
+7. ✅ Milestone 7: Commands (info, parse, validate, translate)
 8. ⏳ Milestone 8: Debugging support
 
 ## License

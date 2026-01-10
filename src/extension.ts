@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 import { RiddlSemanticTokensProvider, legend } from './semanticTokensProvider';
 import { RiddlHoverProvider } from './hoverProvider';
 import { RiddlDiagnosticsProvider } from './diagnosticsProvider';
+import { RiddlCompletionProvider } from './completionProvider';
+import { RiddlDefinitionProvider } from './definitionProvider';
+import { RiddlReferenceProvider } from './referenceProvider';
+import * as commands from './commands';
 
 /**
  * RIDDL VSCode Extension
@@ -10,7 +14,8 @@ import { RiddlDiagnosticsProvider } from './diagnosticsProvider';
  * Milestone 2: RIDDL library integration
  * Milestone 3: Semantic highlighting via semantic token provider
  * Milestone 4: Hover provider for documentation
- * Milestone 5: Diagnostics provider for parse errors
+ * Milestone 5: Diagnostics provider for parse and validation errors
+ * Milestone 6: Code intelligence (completion, definitions, references)
  *
  * This extension provides language support for RIDDL (Reactive Interface to Domain Definition Language),
  * a specification language for designing distributed, reactive, cloud-native systems using DDD principles.
@@ -89,6 +94,43 @@ export function activate(context: vscode.ExtensionContext) {
 
         console.log('RIDDL diagnostics provider registered');
 
+        // Register completion provider for keywords, types, and identifiers
+        console.log('Creating completion provider...');
+        const completionProvider = new RiddlCompletionProvider();
+        console.log('Registering completion provider...');
+        context.subscriptions.push(
+            vscode.languages.registerCompletionItemProvider(
+                selector,
+                completionProvider,
+                '.' // Trigger on dot for qualified names
+            )
+        );
+        console.log('RIDDL completion provider registered');
+
+        // Register definition provider for "Go to Definition"
+        console.log('Creating definition provider...');
+        const definitionProvider = new RiddlDefinitionProvider();
+        console.log('Registering definition provider...');
+        context.subscriptions.push(
+            vscode.languages.registerDefinitionProvider(
+                selector,
+                definitionProvider
+            )
+        );
+        console.log('RIDDL definition provider registered');
+
+        // Register reference provider for "Find All References"
+        console.log('Creating reference provider...');
+        const referenceProvider = new RiddlReferenceProvider();
+        console.log('Registering reference provider...');
+        context.subscriptions.push(
+            vscode.languages.registerReferenceProvider(
+                selector,
+                referenceProvider
+            )
+        );
+        console.log('RIDDL reference provider registered');
+
     } catch (error) {
         console.error('Error during extension activation:', error);
         if (error instanceof Error) {
@@ -98,14 +140,48 @@ export function activate(context: vscode.ExtensionContext) {
         throw error;
     }
 
-    // Register a simple command for testing
-    const disposable = vscode.commands.registerCommand('riddl.showInfo', () => {
-        vscode.window.showInformationMessage('RIDDL Language Support is active!');
-    });
+    // Register RIDDL commands
+    console.log('Registering RIDDL commands...');
 
-    context.subscriptions.push(disposable);
+    // riddl.info - Show version and build information
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.info', () => {
+            commands.riddlInfo();
+        })
+    );
+
+    // riddl.parse - Parse current RIDDL file
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.parse', () => {
+            commands.riddlParse();
+        })
+    );
+
+    // riddl.validate - Validate current RIDDL file
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.validate', () => {
+            commands.riddlValidate();
+        })
+    );
+
+    // riddl.translate - Translate RIDDL to output format (placeholder)
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.translate', () => {
+            commands.riddlTranslate();
+        })
+    );
+
+    // Keep the legacy showInfo command for backwards compatibility
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.showInfo', () => {
+            vscode.window.showInformationMessage('RIDDL Language Support is active!');
+        })
+    );
+
+    console.log('RIDDL commands registered');
 }
 
 export function deactivate() {
     console.log('RIDDL extension is now deactivated');
+    commands.disposeCommands();
 }

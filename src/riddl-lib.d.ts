@@ -54,17 +54,39 @@ declare module '@ossuminc/riddl-lib' {
         validationMessages?: ValidationMessages;
     }
 
+    // Build information structure
+    export interface BuildInfo {
+        name: string;
+        version: string;
+        scalaVersion: string;
+        sbtVersion: string;
+        moduleName: string;
+        description: string;
+        organization: string;
+        organizationName: string;
+        copyrightHolder: string;
+        copyright: string;
+        licenses: string;
+        projectHomepage: string;
+        organizationHomepage: string;
+        builtAtString: string;
+        buildInstant: string;
+        isSnapshot: boolean;
+    }
+
     // RiddlAPI Facade - Stable API with non-minified method names
     export const RiddlAPI: {
         version: string;
+        buildInfo: BuildInfo;
         parseString(source: string, origin?: string, verbose?: boolean): ParseResult;
         parseStringWithContext(source: string, origin: string, verbose: boolean, context: any): ParseResult;
         parseNebula(source: string, origin?: string, verbose?: boolean): ParseResult;
         parseToTokens(source: string, origin?: string, verbose?: boolean): TokenResult;
-        validateString(source: string, origin?: string, verbose?: boolean): ValidationResult;
+        validateString(source: string, origin?: string, verbose?: boolean, noANSIMessages?: boolean): ValidationResult;
         createContext(showTimes?: boolean, showWarnings?: boolean, verbose?: boolean): any;
         formatErrorArray(errors: RiddlError[]): string;
         errorsToStrings(errors: RiddlError[]): string[];
+        formatInfo: string;
     };
 
     // Parser-related exports
