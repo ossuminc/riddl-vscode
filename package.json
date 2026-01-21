@@ -86,8 +86,69 @@
       {
         "command": "riddl.translate",
         "title": "RIDDL: Translate to Output Format"
+      },
+      {
+        "command": "riddl.mcp.toggleConnection",
+        "title": "RIDDL MCP: Toggle Connection"
+      },
+      {
+        "command": "riddl.mcp.showOutput",
+        "title": "RIDDL MCP: Show Output"
+      },
+      {
+        "command": "riddl.mcp.validate",
+        "title": "RIDDL MCP: Validate Current File"
+      },
+      {
+        "command": "riddl.mcp.validatePartial",
+        "title": "RIDDL MCP: Validate Partial Model"
+      },
+      {
+        "command": "riddl.mcp.checkCompleteness",
+        "title": "RIDDL MCP: Check Completeness"
+      },
+      {
+        "command": "riddl.mcp.checkSimulability",
+        "title": "RIDDL MCP: Check Simulability"
+      },
+      {
+        "command": "riddl.mcp.explainError",
+        "title": "RIDDL MCP: Explain Error"
+      },
+      {
+        "command": "riddl.mcp.suggestNext",
+        "title": "RIDDL MCP: Suggest Next Steps"
+      },
+      {
+        "command": "riddl.mcp.generateRiddl",
+        "title": "RIDDL MCP: Generate RIDDL from Description"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "RIDDL",
+      "properties": {
+        "riddl.mcp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MCP server integration for AI-assisted features"
+        },
+        "riddl.mcp.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "URL of the RIDDL MCP server"
+        },
+        "riddl.mcp.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for MCP server authentication (optional)"
+        },
+        "riddl.mcp.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically connect to MCP server when opening RIDDL files"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -113,6 +174,6 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-1.0.1-14-54379e2e-20260109-2100.tgz"
+    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-1.1.1-1-7bc49bb2-20260120-1709.tgz"
   }
 }
