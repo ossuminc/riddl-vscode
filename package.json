@@ -2,9 +2,10 @@
   "name": "riddl-vscode",
   "displayName": "RIDDL Language Support",
   "description": "Language support for RIDDL (Reactive Interface to Domain Definition Language)",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "publisher": "ossuminc",
   "license": "Apache-2.0",
+  "icon": "icons/riddl-icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/ossuminc/riddl-vscode"
