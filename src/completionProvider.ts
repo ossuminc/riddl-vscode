@@ -108,6 +108,239 @@ const RIDDL_TYPES = [
     { label: 'Temperature', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Temperature', documentation: 'A temperature measurement.' },
     { label: 'Nothing', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Unit type', documentation: 'The unit type representing no value.' },
     { label: 'Abstract', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Abstract type', documentation: 'An abstract type that must be refined.' },
+    // Additional types
+    { label: 'Byte', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Single byte', documentation: 'A single byte (8 bits).' },
+    { label: 'Bytes', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Byte array', documentation: 'A sequence of bytes (binary data).' },
+    { label: 'Pattern', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Regex pattern', insertText: 'Pattern("${1:regex}")', documentation: 'A string constrained by a regex pattern.' },
+    { label: 'Range', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Number range', insertText: 'Range(${1:min}, ${2:max})', documentation: 'A numeric range with min and max bounds.' },
+    { label: 'LatLong', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Geographic coordinates', documentation: 'Latitude and longitude geographic coordinates.' },
+    { label: 'Location', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Physical location', documentation: 'A physical location with address or coordinates.' },
+    { label: 'Email', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Email address', documentation: 'A valid email address.' },
+    { label: 'Phone', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Phone number', documentation: 'A phone number.' },
+    { label: 'Natural', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Non-negative integer', documentation: 'A non-negative integer (0 or positive).' },
+    { label: 'Real', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Real number', documentation: 'A real number (floating point).' },
+    { label: 'Optional', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Optional value', insertText: 'Optional(${1:Type})', documentation: 'An optional value that may or may not be present.' },
+    { label: 'OneOrMore', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Non-empty collection', insertText: 'OneOrMore(${1:Type})', documentation: 'A non-empty collection of values.' },
+    { label: 'ZeroOrMore', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Collection', insertText: 'ZeroOrMore(${1:Type})', documentation: 'A collection of zero or more values.' },
+    { label: 'Mapping', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Key-value map', insertText: 'Mapping(${1:KeyType}, ${2:ValueType})', documentation: 'A key-value mapping.' },
+    { label: 'Set', kind: vscode.CompletionItemKind.TypeParameter, detail: 'Unique collection', insertText: 'Set(${1:Type})', documentation: 'A set of unique values.' },
+];
+
+/**
+ * DDD Pattern Snippets - comprehensive templates for common patterns
+ */
+const RIDDL_PATTERNS = [
+    {
+        label: 'Event-Sourced Entity',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Event-sourced entity with commands and events',
+        insertText: `entity \${1:Name} is {
+  option aggregate
+  option event-sourced
+
+  state \${1:Name}State is {
+    \${2:field}: \${3:String}
+  }
+
+  command Create\${1:Name} is { \${4:field}: \${5:String} }
+  event \${1:Name}Created is { \${4:field}: \${5:String} }
+
+  handler \${1:Name}Handler is {
+    on command Create\${1:Name} {
+      send event \${1:Name}Created to outlet \${1:Name}Events
+    }
+    on event \${1:Name}Created {
+      set field \${1:Name}State.\${4:field} to "\${1:Name}Created.\${4:field}"
+    }
+  }
+}`,
+        documentation: 'Creates a complete event-sourced entity with state, commands, events, and handler.',
+    },
+    {
+        label: 'Aggregate Root',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Aggregate root with invariants',
+        insertText: `entity \${1:Name}Aggregate is {
+  option aggregate
+
+  state \${1:Name}State is {
+    id: Id(\${1:Name}Aggregate)
+    \${2:field}: \${3:String}
+    created: DateTime
+    modified: DateTime
+  }
+
+  invariant \${1:Name}MustBeValid is {
+    "The \${1:Name} must have valid data"
+  }
+
+  command Create\${1:Name} is { \${2:field}: \${3:String} }
+  command Update\${1:Name} is { id: Id(\${1:Name}Aggregate), \${2:field}: \${3:String} }
+  command Delete\${1:Name} is { id: Id(\${1:Name}Aggregate) }
+
+  handler \${1:Name}Commands is {
+    on command Create\${1:Name} { ??? }
+    on command Update\${1:Name} { ??? }
+    on command Delete\${1:Name} { ??? }
+  }
+}`,
+        documentation: 'Creates an aggregate root with CRUD commands, state, and invariants.',
+    },
+    {
+        label: 'Repository Pattern',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Repository for entity storage',
+        insertText: `repository \${1:Name}Repository is {
+  type \${1:Name}Record is {
+    id: Id(\${2:Entity})
+    \${3:field}: \${4:String}
+  }
+
+  handler Queries is {
+    on query Find\${1:Name}ById { ??? }
+    on query FindAll\${1:Name}s { ??? }
+  }
+
+  handler Persistence is {
+    on command Save\${1:Name} { ??? }
+    on command Delete\${1:Name} { ??? }
+  }
+}`,
+        documentation: 'Creates a repository with query and persistence handlers.',
+    },
+    {
+        label: 'Saga Pattern',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Saga for distributed transactions',
+        insertText: `saga \${1:Name}Saga is {
+  state \${1:Name}SagaState is {
+    step: String
+    \${2:field}: \${3:String}
+  }
+
+  handler \${1:Name}Orchestrator is {
+    on command Start\${1:Name}Saga {
+      set field \${1:Name}SagaState.step to "started"
+      tell command \${4:FirstStep} to entity \${5:Target}
+    }
+
+    on event \${4:FirstStep}Completed {
+      set field \${1:Name}SagaState.step to "step1-done"
+      tell command \${6:SecondStep} to entity \${7:NextTarget}
+    }
+
+    on event \${1:Name}SagaFailed {
+      // Compensating action
+      tell command Compensate\${1:Name} to entity \${5:Target}
+    }
+  }
+}`,
+        documentation: 'Creates a saga for orchestrating distributed transactions.',
+    },
+    {
+        label: 'Projector Pattern',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Projector for read model',
+        insertText: `projector \${1:Name}Projector is {
+  type \${1:Name}View is {
+    id: Id(\${2:Entity})
+    \${3:field}: \${4:String}
+    lastUpdated: DateTime
+  }
+
+  handler \${1:Name}EventHandler is {
+    on event \${2:Entity}Created {
+      "Create new \${1:Name}View record"
+    }
+    on event \${2:Entity}Updated {
+      "Update \${1:Name}View record"
+    }
+    on event \${2:Entity}Deleted {
+      "Remove \${1:Name}View record"
+    }
+  }
+}`,
+        documentation: 'Creates a projector that builds a read model from events.',
+    },
+    {
+        label: 'Streamlet Processor',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Stream processing element',
+        insertText: `streamlet \${1:Name}Processor is {
+  inlet input is \${2:InputType}
+  outlet output is \${3:OutputType}
+
+  handler Process is {
+    on event \${2:InputType} from inlet input {
+      // Transform and forward
+      send \${3:OutputType} to outlet output
+    }
+  }
+}`,
+        documentation: 'Creates a streamlet for stream processing.',
+    },
+    {
+        label: 'Handler with On Clauses',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Handler with command/event/query handlers',
+        insertText: `handler \${1:Name}Handler is {
+  on command \${2:CommandName} {
+    \${3:// Command handling logic}
+  }
+
+  on event \${4:EventName} {
+    \${5:// Event handling logic}
+  }
+
+  on query \${6:QueryName} {
+    \${7:// Query handling logic}
+  }
+}`,
+        documentation: 'Creates a handler with on clauses for commands, events, and queries.',
+    },
+    {
+        label: 'Epic with Cases',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: User story epic with cases',
+        insertText: `epic \${1:Name} is {
+  user \${2:UserRole} wants to "\${3:goal}"
+  so that "\${4:benefit}"
+
+  case \${5:HappyPath} is {
+    step from user \${2:UserRole} "\${6:action}"
+    step to user \${2:UserRole} "\${7:response}"
+  }
+
+  case \${8:ErrorCase} is {
+    step from user \${2:UserRole} "\${9:invalid action}"
+    step to user \${2:UserRole} "\${10:error message}"
+  }
+}`,
+        documentation: 'Creates an epic (user story) with happy path and error cases.',
+    },
+    {
+        label: 'Context with Common Elements',
+        kind: vscode.CompletionItemKind.Snippet,
+        detail: 'Pattern: Bounded context with typical elements',
+        insertText: `context \${1:Name}Context is {
+  // Types
+  type \${1:Name}Id is Id(\${1:Name}Entity)
+
+  // Commands and Events
+  command Create\${1:Name} is { \${2:field}: \${3:String} }
+  event \${1:Name}Created is { \${2:field}: \${3:String} }
+
+  // Entity
+  entity \${1:Name}Entity is {
+    state \${1:Name}State is { \${2:field}: \${3:String} }
+    handler Commands is { ??? }
+  }
+
+  // Repository
+  repository \${1:Name}Repository is { ??? }
+}`,
+        documentation: 'Creates a bounded context with common DDD elements.',
+    },
 ];
 
 /**
@@ -177,7 +410,19 @@ export class RiddlCompletionProvider implements vscode.CompletionItemProvider {
         for (const word of RIDDL_READABILITY) {
             const item = new vscode.CompletionItem(word.label, word.kind);
             item.detail = word.detail;
-            item.sortText = `3_${word.label}`; // Sort readability words last
+            item.sortText = `3_${word.label}`; // Sort readability words after types
+            completions.push(item);
+        }
+
+        // Add DDD pattern snippets
+        for (const pattern of RIDDL_PATTERNS) {
+            const item = new vscode.CompletionItem(pattern.label, pattern.kind);
+            item.detail = pattern.detail;
+            if (pattern.documentation) {
+                item.documentation = new vscode.MarkdownString(pattern.documentation);
+            }
+            item.insertText = new vscode.SnippetString(pattern.insertText);
+            item.sortText = `4_${pattern.label}`; // Sort patterns last
             completions.push(item);
         }
 

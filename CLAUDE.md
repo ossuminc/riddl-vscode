@@ -53,9 +53,16 @@ The extension was built incrementally through milestones:
 5. ✅ **Milestone 5**: Diagnostics (syntax + semantic validation)
 6. ✅ **Milestone 6**: Code intelligence (completion, definitions, references)
 7. ✅ **Milestone 7**: Commands (info, parse, validate, translate)
-8. ⏳ **Milestone 8**: TBD (debugging not applicable for specification language)
+8. ✅ **Milestone 8**: RIDDL library 1.1.1 upgrade (BAST support)
+9. ⏳ **Milestone 9**: MCP Client Infrastructure (JSON-RPC 2.0)
+10. ⏳ **Milestone 10**: MCP Commands (connect, validate, check, explain)
+11. ⏳ **Milestone 11**: AI-Assisted Code Generation
+12. ⏳ **Milestone 12**: Code Folding
+13. ⏳ **Milestone 13**: Document Outline / Structure View
+14. ⏳ **Milestone 14**: Enhanced Completions
 
-Each milestone has a corresponding `MILESTONEn_*.md` file documenting the implementation.
+Each milestone has a corresponding `MILESTONEn_*.md` file documenting the
+implementation. See `NOTEBOOK.md` for detailed roadmap and design decisions.
 
 ### Provider Pattern
 

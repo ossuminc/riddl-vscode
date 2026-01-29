@@ -30,3 +30,14 @@ node_modules/**
 
 # Logs
 **/*.log
+
+# IDE files
+.idea/**
+.claude/**
+
+# Test files
+test-sample.riddl
+test-files/**
+
+# Plan files
+plan/**

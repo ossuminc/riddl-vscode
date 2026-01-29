@@ -5,7 +5,21 @@ import { RiddlDiagnosticsProvider } from './diagnosticsProvider';
 import { RiddlCompletionProvider } from './completionProvider';
 import { RiddlDefinitionProvider } from './definitionProvider';
 import { RiddlReferenceProvider } from './referenceProvider';
+import { RiddlCodeActionsProvider, registerCodeActionCommands } from './codeActionsProvider';
+import { RiddlFoldingRangeProvider } from './foldingProvider';
+import { RiddlDocumentSymbolProvider } from './documentSymbolProvider';
 import * as commands from './commands';
+import {
+    getMcpService,
+    disposeMcpService,
+    mcpValidate,
+    mcpValidatePartial,
+    mcpCheckCompleteness,
+    mcpCheckSimulability,
+    mcpExplainError,
+    mcpSuggestNext,
+    mcpGenerateRiddl,
+} from './mcp';
 
 /**
  * RIDDL VSCode Extension
@@ -16,6 +30,12 @@ import * as commands from './commands';
  * Milestone 4: Hover provider for documentation
  * Milestone 5: Diagnostics provider for parse and validation errors
  * Milestone 6: Code intelligence (completion, definitions, references)
+ * Milestone 7: Commands (info, parse, validate, translate)
+ * Milestone 9: MCP client infrastructure for AI-assisted features
+ * Milestone 10: MCP commands for AI tools
+ * Milestone 11: Code actions (light bulb) for AI-assisted development
+ * Milestone 12: Code folding for definitions and comments
+ * Milestone 13: Document outline and breadcrumb navigation
  *
  * This extension provides language support for RIDDL (Reactive Interface to Domain Definition Language),
  * a specification language for designing distributed, reactive, cloud-native systems using DDD principles.
@@ -131,6 +151,49 @@ export function activate(context: vscode.ExtensionContext) {
         );
         console.log('RIDDL reference provider registered');
 
+        // Register code actions provider for AI-assisted suggestions
+        console.log('Creating code actions provider...');
+        const codeActionsProvider = new RiddlCodeActionsProvider();
+        console.log('Registering code actions provider...');
+        context.subscriptions.push(
+            vscode.languages.registerCodeActionsProvider(
+                selector,
+                codeActionsProvider,
+                {
+                    providedCodeActionKinds: RiddlCodeActionsProvider.providedCodeActionKinds,
+                }
+            )
+        );
+        console.log('RIDDL code actions provider registered');
+
+        // Register code action commands
+        registerCodeActionCommands(context);
+        console.log('RIDDL code action commands registered');
+
+        // Register folding range provider for code folding
+        console.log('Creating folding range provider...');
+        const foldingProvider = new RiddlFoldingRangeProvider();
+        console.log('Registering folding range provider...');
+        context.subscriptions.push(
+            vscode.languages.registerFoldingRangeProvider(
+                selector,
+                foldingProvider
+            )
+        );
+        console.log('RIDDL folding range provider registered');
+
+        // Register document symbol provider for outline and breadcrumbs
+        console.log('Creating document symbol provider...');
+        const documentSymbolProvider = new RiddlDocumentSymbolProvider();
+        console.log('Registering document symbol provider...');
+        context.subscriptions.push(
+            vscode.languages.registerDocumentSymbolProvider(
+                selector,
+                documentSymbolProvider
+            )
+        );
+        console.log('RIDDL document symbol provider registered');
+
     } catch (error) {
         console.error('Error during extension activation:', error);
         if (error instanceof Error) {
@@ -179,9 +242,91 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     console.log('RIDDL commands registered');
+
+    // Initialize MCP service for AI-assisted features
+    console.log('Initializing MCP service...');
+    const mcpService = getMcpService();
+    context.subscriptions.push(mcpService);
+
+    // Register MCP commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.toggleConnection', () => {
+            mcpService.toggleConnection();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.showOutput', () => {
+            mcpService.showOutput();
+        })
+    );
+
+    // Register MCP tool commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.validate', () => {
+            mcpValidate();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.validatePartial', () => {
+            mcpValidatePartial();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.checkCompleteness', () => {
+            mcpCheckCompleteness();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.checkSimulability', () => {
+            mcpCheckSimulability();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.explainError', () => {
+            mcpExplainError();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.suggestNext', () => {
+            mcpSuggestNext();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riddl.mcp.generateRiddl', () => {
+            mcpGenerateRiddl();
+        })
+    );
+
+    console.log('MCP tool commands registered');
+
+    // Auto-connect to MCP server if enabled
+    const mcpConfig = mcpService.getConfig();
+    if (mcpConfig.enabled && mcpConfig.autoConnect) {
+        // Delay auto-connect to allow extension to fully activate
+        setTimeout(() => {
+            console.log('Auto-connecting to MCP server...');
+            mcpService.connect().then((result) => {
+                if (result.success) {
+                    console.log('MCP auto-connect successful');
+                } else {
+                    console.log('MCP auto-connect failed:', result.error);
+                }
+            });
+        }, 1000);
+    }
+
+    console.log('MCP service initialized');
 }
 
 export function deactivate() {
     console.log('RIDDL extension is now deactivated');
     commands.disposeCommands();
+    disposeMcpService();
 }
