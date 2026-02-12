@@ -5,6 +5,7 @@ import { RiddlDiagnosticsProvider } from './diagnosticsProvider';
 import { RiddlCompletionProvider } from './completionProvider';
 import { RiddlDefinitionProvider } from './definitionProvider';
 import { RiddlReferenceProvider } from './referenceProvider';
+import { RiddlDocumentSymbolProvider } from './documentSymbolProvider';
 import * as commands from './commands';
 
 /**
@@ -130,6 +131,18 @@ export function activate(context: vscode.ExtensionContext) {
             )
         );
         console.log('RIDDL reference provider registered');
+
+        // Register document symbol provider for Outline, Breadcrumbs, Go to Symbol
+        console.log('Creating document symbol provider...');
+        const documentSymbolProvider = new RiddlDocumentSymbolProvider();
+        console.log('Registering document symbol provider...');
+        context.subscriptions.push(
+            vscode.languages.registerDocumentSymbolProvider(
+                selector,
+                documentSymbolProvider
+            )
+        );
+        console.log('RIDDL document symbol provider registered');
 
     } catch (error) {
         console.error('Error during extension activation:', error);

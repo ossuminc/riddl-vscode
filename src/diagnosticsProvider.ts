@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { RiddlAPI, RiddlError, ValidationResult } from '@ossuminc/riddl-lib';
+import { RiddlAPI, ErrorInfo, ValidationResult, HandlerCompletenessEntry } from '@ossuminc/riddl-lib';
 
 /**
  * Strip ANSI color codes from a string
@@ -27,16 +27,17 @@ function stripAnsiCodes(text: string): string {
  * Map RIDDL error severity to VSCode diagnostic severity
  */
 function getErrorSeverity(kind: string): vscode.DiagnosticSeverity {
-    switch (kind.toLowerCase()) {
-        case 'error':
+    switch (kind) {
+        case 'Error':
+        case 'SevereError':
             return vscode.DiagnosticSeverity.Error;
-        case 'warning':
+        case 'Warning':
+        case 'MissingWarning':
+        case 'StyleWarning':
+        case 'UsageWarning':
             return vscode.DiagnosticSeverity.Warning;
-        case 'info':
-        case 'information':
+        case 'Info':
             return vscode.DiagnosticSeverity.Information;
-        case 'hint':
-            return vscode.DiagnosticSeverity.Hint;
         default:
             return vscode.DiagnosticSeverity.Error;
     }
@@ -45,7 +46,7 @@ function getErrorSeverity(kind: string): vscode.DiagnosticSeverity {
 /**
  * Convert RIDDL error to VSCode diagnostic
  */
-function riddlErrorToDiagnostic(error: RiddlError, document: vscode.TextDocument): vscode.Diagnostic {
+function riddlErrorToDiagnostic(error: ErrorInfo, document: vscode.TextDocument): vscode.Diagnostic {
     // RIDDL uses 1-based line/column, VSCode uses 0-based
     const line = Math.max(0, error.location.line - 1);
     let col = Math.max(0, error.location.col - 1);
@@ -171,7 +172,7 @@ export class RiddlDiagnosticsProvider {
             const seen = new Set<string>();
 
             // Process parse errors (syntax errors) - shown in red
-            if (result.parseErrors && result.parseErrors.length > 0) {
+            if (result.parseErrors.length > 0) {
                 console.log(`[Diagnostics] Found ${result.parseErrors.length} parse error(s)`);
 
                 for (const error of result.parseErrors) {
@@ -193,12 +194,12 @@ export class RiddlDiagnosticsProvider {
                 }
             }
 
-            // Process validation messages (semantic errors/warnings) if validation ran
-            if (result.validationMessages) {
+            // Process validation messages (semantic errors/warnings)
+            {
                 const valMsgs = result.validationMessages;
 
                 // Validation errors - shown with different visual (still Error severity but different source)
-                if (valMsgs.errors && valMsgs.errors.length > 0) {
+                if (valMsgs.errors.length > 0) {
                     console.log(`[Diagnostics] Found ${valMsgs.errors.length} validation error(s)`);
 
                     for (const error of valMsgs.errors) {
@@ -221,7 +222,7 @@ export class RiddlDiagnosticsProvider {
                 }
 
                 // Validation warnings - shown in yellow
-                if (valMsgs.warnings && valMsgs.warnings.length > 0) {
+                if (valMsgs.warnings.length > 0) {
                     console.log(`[Diagnostics] Found ${valMsgs.warnings.length} validation warning(s)`);
 
                     for (const warning of valMsgs.warnings) {
@@ -244,7 +245,7 @@ export class RiddlDiagnosticsProvider {
                 }
 
                 // Validation info messages - shown in blue
-                if (valMsgs.info && valMsgs.info.length > 0) {
+                if (valMsgs.info.length > 0) {
                     console.log(`[Diagnostics] Found ${valMsgs.info.length} validation info message(s)`);
 
                     for (const info of valMsgs.info) {
@@ -266,6 +267,9 @@ export class RiddlDiagnosticsProvider {
                     }
                 }
             }
+
+            // Handler completeness analysis
+            this.addHandlerCompletenessDiagnostics(text, origin, document, diagnostics, seen);
 
             if (diagnostics.length === 0) {
                 console.log('[Diagnostics] No errors or warnings found');
@@ -313,6 +317,82 @@ export class RiddlDiagnosticsProvider {
      */
     public clearAll(): void {
         this.diagnosticCollection.clear();
+    }
+
+    /**
+     * Add handler completeness diagnostics
+     */
+    private addHandlerCompletenessDiagnostics(
+        text: string,
+        origin: string,
+        document: vscode.TextDocument,
+        diagnostics: vscode.Diagnostic[],
+        seen: Set<string>
+    ): void {
+        try {
+            const result = RiddlAPI.getHandlerCompleteness(text, origin);
+            if (!result.succeeded || !result.value) {
+                return;
+            }
+
+            for (const entry of result.value) {
+                if (entry.category === 'Executable') {
+                    continue;
+                }
+
+                const key = `handler:${entry.parentId}.${entry.handlerId}:${entry.category}`;
+                if (seen.has(key)) {
+                    continue;
+                }
+                seen.add(key);
+
+                const diagnostic = this.createHandlerDiagnostic(entry, document);
+                if (diagnostic) {
+                    diagnostics.push(diagnostic);
+                }
+            }
+        } catch (error) {
+            console.error('[Diagnostics] Handler completeness error:', error);
+        }
+    }
+
+    /**
+     * Create a diagnostic for a handler completeness entry
+     */
+    private createHandlerDiagnostic(
+        entry: HandlerCompletenessEntry,
+        document: vscode.TextDocument
+    ): vscode.Diagnostic | null {
+        // Find handler position via regex search
+        const text = document.getText();
+        const handlerPattern = new RegExp(`handler\\s+${entry.handlerId}\\b`);
+        const match = handlerPattern.exec(text);
+
+        let range: vscode.Range;
+        if (match) {
+            const pos = document.positionAt(match.index);
+            const endPos = document.positionAt(match.index + match[0].length);
+            range = new vscode.Range(pos, endPos);
+        } else {
+            range = new vscode.Range(0, 0, 0, 1);
+        }
+
+        let message: string;
+        let severity: vscode.DiagnosticSeverity;
+
+        if (entry.category === 'Empty') {
+            message = `Handler '${entry.handlerId}' in ${entry.parentKind} '${entry.parentId}' has no on-clauses`;
+            severity = vscode.DiagnosticSeverity.Warning;
+        } else {
+            // PromptOnly
+            message = `Handler '${entry.handlerId}' in ${entry.parentKind} '${entry.parentId}' contains only prompt statements (${entry.promptCount} clause(s))`;
+            severity = vscode.DiagnosticSeverity.Information;
+        }
+
+        const diagnostic = new vscode.Diagnostic(range, message, severity);
+        diagnostic.source = 'RIDDL (handler)';
+        diagnostic.code = entry.category;
+        return diagnostic;
     }
 
     /**

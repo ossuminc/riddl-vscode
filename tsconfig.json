@@ -30,6 +30,9 @@
   ],
   "exclude": [
     "node_modules",
-    ".vscode-test"
+    ".vscode-test",
+    "src/*-test.ts",
+    "src/test-*.ts",
+    "src/riddl-parser.ts"
   ]
 }

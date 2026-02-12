@@ -73,6 +73,8 @@ export function riddlInfo(): void {
         channel.appendLine('  ✓ Code Completion');
         channel.appendLine('  ✓ Go to Definition');
         channel.appendLine('  ✓ Find All References');
+        channel.appendLine('  ✓ Document Outline (Breadcrumbs, Go to Symbol)');
+        channel.appendLine('  ✓ Handler Completeness Analysis');
     } catch (error) {
         channel.appendLine('Error retrieving RIDDL build information:');
         channel.appendLine(String(error));
@@ -117,8 +119,26 @@ export function riddlParse(): void {
     if (result.succeeded && result.value) {
         channel.appendLine('✓ Parse succeeded');
         channel.appendLine('');
-        channel.appendLine('AST Structure:');
-        channel.appendLine(JSON.stringify(result.value, null, 2));
+
+        // Display definition tree using getTree()
+        const treeResult = RiddlAPI.getTree(source, origin);
+        if (treeResult.succeeded && treeResult.value) {
+            channel.appendLine('Definition Tree:');
+            function printTree(nodes: import('@ossuminc/riddl-lib').TreeNode[], indent: number): void {
+                for (const node of nodes) {
+                    const prefix = '  '.repeat(indent);
+                    channel.appendLine(`${prefix}${node.kind} ${node.id} (line ${node.line})`);
+                    printTree(node.children, indent + 1);
+                }
+            }
+            printTree(treeResult.value, 1);
+        } else {
+            // Fallback: show root inspection
+            const info = RiddlAPI.inspectRoot(result.value);
+            channel.appendLine('Root Info:');
+            channel.appendLine(`  Domains: ${info.domains.map(d => d.id).join(', ') || '(none)'}`);
+        }
+
         channel.appendLine('');
         channel.appendLine('='.repeat(60));
     } else if (result.errors && result.errors.length > 0) {
@@ -177,31 +197,29 @@ export function riddlValidate(): void {
         channel.appendLine('');
 
         // Show validation messages (warnings and info)
-        if (result.validationMessages) {
-            const { warnings, info } = result.validationMessages;
+        const { warnings, info } = result.validationMessages;
 
-            if (warnings && warnings.length > 0) {
-                channel.appendLine(`Warnings (${warnings.length}):`);
-                warnings.forEach((warning, index) => {
-                    channel.appendLine(`${index + 1}. [${warning.kind}] at line ${warning.location.line}, column ${warning.location.col}`);
-                    channel.appendLine(`   ${stripAnsiCodes(warning.message)}`);
-                });
-                channel.appendLine('');
-            }
+        if (warnings.length > 0) {
+            channel.appendLine(`Warnings (${warnings.length}):`);
+            warnings.forEach((warning, index) => {
+                channel.appendLine(`${index + 1}. [${warning.kind}] at line ${warning.location.line}, column ${warning.location.col}`);
+                channel.appendLine(`   ${stripAnsiCodes(warning.message)}`);
+            });
+            channel.appendLine('');
+        }
 
-            if (info && info.length > 0) {
-                channel.appendLine(`Info Messages (${info.length}):`);
-                info.forEach((msg, index) => {
-                    channel.appendLine(`${index + 1}. [${msg.kind}] at line ${msg.location.line}, column ${msg.location.col}`);
-                    channel.appendLine(`   ${stripAnsiCodes(msg.message)}`);
-                });
-                channel.appendLine('');
-            }
+        if (info.length > 0) {
+            channel.appendLine(`Info Messages (${info.length}):`);
+            info.forEach((msg, index) => {
+                channel.appendLine(`${index + 1}. [${msg.kind}] at line ${msg.location.line}, column ${msg.location.col}`);
+                channel.appendLine(`   ${stripAnsiCodes(msg.message)}`);
+            });
+            channel.appendLine('');
+        }
 
-            if ((!warnings || warnings.length === 0) && (!info || info.length === 0)) {
-                channel.appendLine('No warnings or info messages.');
-                channel.appendLine('');
-            }
+        if (warnings.length === 0 && info.length === 0) {
+            channel.appendLine('No warnings or info messages.');
+            channel.appendLine('');
         }
 
         channel.appendLine('='.repeat(60));
@@ -210,7 +228,7 @@ export function riddlValidate(): void {
         channel.appendLine('');
 
         // Show parse errors
-        if (result.parseErrors && result.parseErrors.length > 0) {
+        if (result.parseErrors.length > 0) {
             channel.appendLine(`Parse Errors (${result.parseErrors.length}):`);
             result.parseErrors.forEach((error, index) => {
                 channel.appendLine(`${index + 1}. [${error.kind}] at line ${error.location.line}, column ${error.location.col}`);
@@ -220,29 +238,25 @@ export function riddlValidate(): void {
         }
 
         // Show validation errors
-        if (result.validationMessages && result.validationMessages.errors) {
-            const errors = result.validationMessages.errors;
-            if (errors.length > 0) {
-                channel.appendLine(`Validation Errors (${errors.length}):`);
-                errors.forEach((error, index) => {
-                    channel.appendLine(`${index + 1}. [${error.kind}] at line ${error.location.line}, column ${error.location.col}`);
-                    channel.appendLine(`   ${stripAnsiCodes(error.message)}`);
-                });
-                channel.appendLine('');
-            }
+        const valErrors = result.validationMessages.errors;
+        if (valErrors.length > 0) {
+            channel.appendLine(`Validation Errors (${valErrors.length}):`);
+            valErrors.forEach((error, index) => {
+                channel.appendLine(`${index + 1}. [${error.kind}] at line ${error.location.line}, column ${error.location.col}`);
+                channel.appendLine(`   ${stripAnsiCodes(error.message)}`);
+            });
+            channel.appendLine('');
         }
 
         // Show warnings even when validation fails
-        if (result.validationMessages && result.validationMessages.warnings) {
-            const warnings = result.validationMessages.warnings;
-            if (warnings.length > 0) {
-                channel.appendLine(`Warnings (${warnings.length}):`);
-                warnings.forEach((warning, index) => {
-                    channel.appendLine(`${index + 1}. [${warning.kind}] at line ${warning.location.line}, column ${warning.location.col}`);
-                    channel.appendLine(`   ${stripAnsiCodes(warning.message)}`);
-                });
-                channel.appendLine('');
-            }
+        const valWarnings = result.validationMessages.warnings;
+        if (valWarnings.length > 0) {
+            channel.appendLine(`Warnings (${valWarnings.length}):`);
+            valWarnings.forEach((warning, index) => {
+                channel.appendLine(`${index + 1}. [${warning.kind}] at line ${warning.location.line}, column ${warning.location.col}`);
+                channel.appendLine(`   ${stripAnsiCodes(warning.message)}`);
+            });
+            channel.appendLine('');
         }
 
         channel.appendLine('='.repeat(60));

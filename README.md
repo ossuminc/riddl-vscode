@@ -85,8 +85,16 @@ Language support for RIDDL (Reactive Interface to Domain Definition Language), a
 - **Error Handling**: Graceful handling of missing editor, wrong file type, library errors
 - **Status**: Complete
 
-### 🚧 Upcoming Milestones
-- **Milestone 8**: Debugging - Debug support for RIDDL
+### ✅ Milestone 8: Document Outline & Handler Analysis
+- **Document Symbol Provider**: Hierarchical document symbols
+  - **Outline View**: See domain/context/entity hierarchy in sidebar
+  - **Breadcrumbs**: Navigate nested definitions from editor top bar
+  - **Go to Symbol**: Cmd+Shift+O to jump to any definition
+- **Handler Completeness Analysis**: Warnings for empty/incomplete handlers
+  - `Empty` handlers: Warning diagnostic for handlers with no on-clauses
+  - `PromptOnly` handlers: Info diagnostic for prompt-only handlers
+  - Source label: `RIDDL (handler)` in Problems panel
+- **Status**: Complete
 
 ## Installation
 
@@ -158,6 +166,9 @@ Placeholder for future translation features. Currently shows information about a
 - **Go to Definition**: F12 or Cmd+Click on a type/identifier
 - **Find All References**: Shift+F12 on any symbol
 - **Real-time Diagnostics**: Errors and warnings appear as you type
+- **Document Outline**: See definition hierarchy in Outline sidebar
+- **Breadcrumbs**: Navigate Domain > Context > Entity from editor top bar
+- **Go to Symbol**: Cmd+Shift+O to jump to any definition in the file
 
 ## Development
 
@@ -272,7 +283,7 @@ Contributions are welcome! This extension is being built incrementally with test
 5. ✅ Milestone 5: Diagnostics (syntax + semantic validation)
 6. ✅ Milestone 6: Code intelligence (completion, definitions, references)
 7. ✅ Milestone 7: Commands (info, parse, validate, translate)
-8. ⏳ Milestone 8: Debugging support
+8. ✅ Milestone 8: Document Outline & Handler Analysis
 
 ## License
 

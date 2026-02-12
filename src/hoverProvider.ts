@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { RiddlAPI, Token, TokenResult } from '@ossuminc/riddl-lib';
+import { RiddlAPI, Token, ParseResult } from '@ossuminc/riddl-lib';
 
 /**
  * Get hover information for keywords
@@ -251,7 +251,7 @@ export class RiddlHoverProvider implements vscode.HoverProvider {
             console.log(`[Hover] Parsing document, length: ${text.length}`);
 
             // Parse to tokens
-            const tokenResult: TokenResult = RiddlAPI.parseToTokens(text, origin);
+            const tokenResult: ParseResult<Token[]> = RiddlAPI.parseToTokens(text, origin);
 
             console.log(`[Hover] Parse succeeded: ${tokenResult.succeeded}`);
 

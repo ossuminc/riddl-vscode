@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { RiddlAPI, Token, TokenResult } from '@ossuminc/riddl-lib';
+import { RiddlAPI, Token, ParseResult } from '@ossuminc/riddl-lib';
 
 /**
  * Legend defining the semantic token types and modifiers we use
@@ -91,7 +91,7 @@ export class RiddlSemanticTokensProvider implements vscode.DocumentSemanticToken
 
         try {
             // Parse to tokens using RiddlAPI
-            const result: TokenResult = RiddlAPI.parseToTokens(text, origin);
+            const result: ParseResult<Token[]> = RiddlAPI.parseToTokens(text, origin);
 
             console.log(`[SemanticTokens] Parse succeeded: ${result.succeeded}`);
 

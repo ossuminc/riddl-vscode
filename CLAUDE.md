@@ -27,7 +27,7 @@ riddl-vscode/
 │   ├── completionProvider.ts      # Code completion (IntelliSense)
 │   ├── definitionProvider.ts      # Go to Definition
 │   ├── referenceProvider.ts       # Find All References
-│   └── riddl-lib.d.ts             # TypeScript declarations for riddl-lib
+│   └── documentSymbolProvider.ts  # Document outline, breadcrumbs, go to symbol
 ├── syntaxes/
 │   └── riddl.tmLanguage.json      # TextMate grammar for syntax highlighting
 ├── test/
@@ -53,7 +53,7 @@ The extension was built incrementally through milestones:
 5. ✅ **Milestone 5**: Diagnostics (syntax + semantic validation)
 6. ✅ **Milestone 6**: Code intelligence (completion, definitions, references)
 7. ✅ **Milestone 7**: Commands (info, parse, validate, translate)
-8. ⏳ **Milestone 8**: TBD (debugging not applicable for specification language)
+8. ✅ **Milestone 8**: Document Outline & Handler Analysis
 
 Each milestone has a corresponding `MILESTONEn_*.md` file documenting the implementation.
 
@@ -74,16 +74,17 @@ Each provider implements a specific interface:
 - `DefinitionProvider` → `provideDefinition()`
 - `ReferenceProvider` → `provideReferences()`
 - `DocumentSemanticTokensProvider` → `provideDocumentSemanticTokens()`
+- `DocumentSymbolProvider` → `provideDocumentSymbols()`
 
 ### RIDDL Library Integration
 
 The extension uses `@ossuminc/riddl-lib`, a Scala.js npm package:
 
-**Installation**:
+**Installation** (from GitHub Packages via `.npmrc`):
 ```json
 {
   "dependencies": {
-    "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-<version>.tgz"
+    "@ossuminc/riddl-lib": "1.8.0"
   }
 }
 ```
@@ -92,14 +93,21 @@ The extension uses `@ossuminc/riddl-lib`, a Scala.js npm package:
 ```typescript
 import { RiddlAPI } from '@ossuminc/riddl-lib';
 
-// Parse RIDDL source
+// Parse RIDDL source (returns opaque RootAST)
 const result = RiddlAPI.parseString(source, origin, verbose);
+// Inspect opaque root: RiddlAPI.inspectRoot(result.value)
 
 // Validate RIDDL source (includes parsing + semantic validation)
-const validationResult = RiddlAPI.validateString(source, origin, verbose, noANSI);
+const validationResult = RiddlAPI.validateString(
+    source, origin, verbose, noANSI);
 
 // Tokenize for syntax highlighting
 const tokensResult = RiddlAPI.parseToTokens(source, origin, verbose);
+
+// Structural analysis (v1.8.0+)
+const tree = RiddlAPI.getTree(source, origin);       // hierarchical
+const outline = RiddlAPI.getOutline(source, origin);  // flat
+const handlers = RiddlAPI.getHandlerCompleteness(source, origin);
 
 // Get build info
 const buildInfo = RiddlAPI.buildInfo;
@@ -107,7 +115,9 @@ const formatInfo = RiddlAPI.formatInfo; // Pre-formatted string
 ```
 
 **TypeScript Declarations**:
-All API types are declared in `src/riddl-lib.d.ts` for type safety.
+Types are shipped with the package (`index.d.ts`). Key types:
+`ErrorInfo`, `ParseResult<T>`, `Token`, `TreeNode`,
+`ValidationResult`, `HandlerCompletenessEntry`, `RootAST` (opaque).
 
 ### Output Channels vs Diagnostics
 
@@ -310,23 +320,22 @@ npm run package
 
 ### Updating RIDDL Library
 
+The package is published to GitHub Packages. `.npmrc` configures
+the `@ossuminc` scope to use `npm.pkg.github.com`.
+
 When the RIDDL library is updated:
 
-1. **Rebuild npm package** in riddl repository:
-   ```bash
-   cd ../riddl
-   ./scripts/pack-npm-modules.sh riddlLib
-   ```
-
-2. **Update package.json** with new version:
+1. **Update package.json** with new version:
    ```json
-   "@ossuminc/riddl-lib": "file:../riddl/npm-packages/ossuminc-riddl-lib-<new-version>.tgz"
+   "@ossuminc/riddl-lib": "<new-version>"
    ```
 
-3. **Reinstall**:
+2. **Reinstall**:
    ```bash
    npm install
    ```
+
+3. **Check for API changes** in the shipped `index.d.ts`
 
 4. **Test** the extension with new library
 
@@ -467,36 +476,50 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ### Key Methods
 
 **parseString(source, origin, verbose)**:
-- Returns: `{ succeeded: boolean, value?: Root, errors?: Array<Error> }`
-- Use for: Getting AST structure
+- Returns: `ParseResult<RootAST>` (opaque handle)
+- Use for: Getting AST; pass to `inspectRoot()` or `getDomains()`
 
 **validateString(source, origin, verbose, noANSIMessages)**:
-- Returns: `{ succeeded: boolean, parseErrors?: Array<Error>, validationMessages?: { errors, warnings, info } }`
+- Returns: `ValidationResult` with `parseErrors: ErrorInfo[]` and
+  `validationMessages: ValidationMessages` (not optional)
 - Use for: Full validation pipeline
 
 **parseToTokens(source, origin, verbose)**:
-- Returns: `{ succeeded: boolean, value?: Array<Token>, errors?: Array<Error> }`
+- Returns: `ParseResult<Token[]>`
 - Use for: Semantic highlighting
 
-**buildInfo**:
-- Returns: Object with version, name, etc.
-- Use for: Extension info display
+**getTree(source, origin)**:
+- Returns: `ParseResult<TreeNode[]>` (recursive hierarchy)
+- Use for: Document symbols, outline view
 
-**formatInfo**:
-- Returns: Pre-formatted string with build info
-- Use for: Quick info display
+**getOutline(source, origin)**:
+- Returns: `ParseResult<OutlineEntry[]>` (flat with depth)
+- Use for: Flat outline/TOC views
+
+**getHandlerCompleteness(source, origin)**:
+- Returns: `ParseResult<HandlerCompletenessEntry[]>`
+- Use for: Handler completeness diagnostics
+
+**inspectRoot(root)**:
+- Returns: `RootInfo` with domains, location, isEmpty
+- Use for: Inspecting opaque RootAST from parseString
+
+**buildInfo** / **formatInfo**:
+- Build metadata object / pre-formatted string
 
 ### Error Object Structure
 
 ```typescript
-interface RiddlError {
-    kind: string;           // Error type
-    message: string;        // Error description (may contain ANSI codes)
+interface ErrorInfo {
+    kind: 'Error' | 'SevereError' | 'Warning'
+        | 'MissingWarning' | 'StyleWarning'
+        | 'UsageWarning' | 'Info';
+    message: string;        // May contain ANSI codes
     location: {
         line: number;       // 1-based line number
         col: number;        // 1-based column number
         offset: number;     // Character offset
-        source: string;     // File path or "empty"
+        source: string;     // File path or "string"
     };
 }
 ```
@@ -548,7 +571,7 @@ Tests run in a VSCode instance automatically.
 3. **Strip ANSI codes for display** - Use `stripAnsiCodes()` for all user-visible output
 4. **Debounce expensive operations** - 500ms delay for parsing/validation
 5. **Two display mechanisms** - Output channel for commands, diagnostics for real-time errors
-6. **Update npm package carefully** - Rebuild riddl library, update package.json, npm install
+6. **Update npm package carefully** - Update version in package.json, npm install
 7. **Three documentation types** - Technical (MILESTONE*.md), User (COMMANDS.md), Overview (README.md)
 8. **Dispose resources on deactivate** - Clean up in `deactivate()` function
 9. **Test each feature** - Add tests to `test/suite/` for new features
@@ -570,3 +593,5 @@ Potential features for future milestones:
 - Integration with riddlc translation commands
 - Visual diagram generation from RIDDL
 - Multi-file project support
+- Message flow visualization (using `getMessageFlow()`)
+- Entity lifecycle/state machine view (using `getEntityLifecycles()`)
